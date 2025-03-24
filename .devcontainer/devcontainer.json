@@ -1,6 +1,9 @@
 {
 	"name": "COMP30024",
 	"image": "registry.gitlab.unimelb.edu.au:5005/comp30024/envs/main:latest",
+	"mounts": [
+		"source=${localEnv:HOME}/.ssh,target=/home/hakusen/.ssh,type=bind,consistency=cached"
+	],
 	"customizations": {
 		"vscode": {
 			"extensions": [
