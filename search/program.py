@@ -72,7 +72,7 @@ def expand_node_jump(node, multiple_jumps = []):
         # Only allow multiple jumps
         if (new_node is not None and new_node.is_jump):
             # Merge two nodes
-            new_node.action = MoveAction(new_node.action.coord, node.action.directions + new_node.action.directions)
+            new_node.action = MoveAction(node.action.coord, node.action.directions + new_node.action.directions)
             new_node.parent = node.parent
             new_node.depth = node.depth
 
