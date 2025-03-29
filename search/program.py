@@ -3,7 +3,7 @@
 
 from .core import CellState, Coord, Direction, MoveAction
 from .utils import render_board
-
+from .ai_utils import *
 
 def search(
     board: dict[Coord, CellState]
@@ -33,6 +33,13 @@ def search(
     # ...
     # ... (your solution goes here!)
     # ...
+
+    init_node = Node(State(board, None), None, None, 0, [], 1, 1, 1)
+    new_node = apply_action(Direction.Down, init_node)
+    new_node_2 = apply_action(Direction.DownLeft, new_node)
+
+    print(new_node_2.action)
+
 
     # Here we're returning "hardcoded" actions as an example of the expected
     # output format. Of course, you should instead return the result of your
