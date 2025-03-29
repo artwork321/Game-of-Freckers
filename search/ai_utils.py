@@ -3,7 +3,7 @@ from .utils import render_board
 
 # Node: contain state, parent, action, depth, children, h(n), f(n), min (f(n))
 class Node:
-    def __init__(self, state, parent, action : MoveAction, depth, children, hn, fn, min_fn):
+    def __init__(self, state, parent, action : MoveAction, depth, children, hn, fn, min_fn, is_jump=False):
         self.state = state
         self.parent = parent
         self.action = action
@@ -12,6 +12,7 @@ class Node:
         self.hn = hn  
         self.fn = fn  
         self.min_fn = min_fn  # minimum fn so far
+        self.is_jump = is_jump
 
     
     def add_children(self, child_node):
@@ -45,6 +46,7 @@ def apply_action(direction : Direction, node):
 
     current_state = node.state
     new_state = State(node.state.board.copy(), node.state.frog_coord)
+    is_jump = False
 
     try: 
         new_coord = current_state.frog_coord + direction
@@ -52,9 +54,10 @@ def apply_action(direction : Direction, node):
         return None
     
     # Update state for valid move
-    if (new_coord in current_state.board and current_state.board[new_coord] == CellState.BLUE): # Valid jump
+    if (new_coord in current_state.board and current_state.board[new_coord] == CellState.BLUE): # Can jump
         try:
             new_coord = new_coord + direction
+            is_jump = True
         except ValueError:
             return None  # Invalid jump move
 
@@ -65,7 +68,7 @@ def apply_action(direction : Direction, node):
         new_state.board.pop(current_state.frog_coord)
 
         hn = fn = min_fn = 1
-        new_node = Node(new_state, node, MoveAction(current_state.frog_coord, direction), node.depth+1, [], hn, fn, min_fn)
+        new_node = Node(new_state, node, MoveAction(current_state.frog_coord, direction), node.depth+1, [], hn, fn, min_fn, is_jump)
 
         return new_node
     else:

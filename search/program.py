@@ -5,6 +5,8 @@ from .core import CellState, Coord, Direction, MoveAction
 from .utils import render_board
 from .ai_utils import *
 
+DIR_ACTIONS = [Direction.Down, Direction.Right, Direction.Left, Direction.DownLeft, Direction.DownRight]
+
 def search(
     board: dict[Coord, CellState]
 ) -> list[MoveAction] | None:
@@ -30,16 +32,10 @@ def search(
     print(render_board(board, ansi=True))
 
     # Do some impressive AI stuff here to find the solution...
-    # ...
-    # ... (your solution goes here!)
-    # ...
-
     init_node = Node(State(board, None), None, None, 0, [], 1, 1, 1)
     priority_queue = StablePriorityQueue()
-
     priority_queue.put(init_node)
 
-    DIR_ACTIONS = [Direction.Down, Direction.Right, Direction.Left, Direction.DownLeft, Direction.DownRight]
     
     while True:
         if priority_queue == []:
@@ -55,20 +51,32 @@ def search(
             new_node = apply_action(dir, next_node)
 
             if (new_node is not None):
+                multiple_jumps_node = []
+
+                if (new_node.is_jump):
+                    multiple_jumps_node = expand_node_jump(new_node)
+
                 next_node.add_children(new_node)
-                priority_queue.put(new_node)
+
+                for node in multiple_jumps_node:
+                    next_node.add_children(node)
+                    priority_queue.put(node)
                 
+                priority_queue.put(new_node)
 
+def expand_node_jump(node, multiple_jumps = []):
 
-    # Here we're returning "hardcoded" actions as an example of the expected
-    # output format. Of course, you should instead return the result of your
-    # search algorithm. Remember: if no solution is possible for a given input,
-    # return `None` instead of a list.
-    return [
-        MoveAction(Coord(0, 5), [Direction.Down]),
-        MoveAction(Coord(1, 5), [Direction.DownLeft]),
-        MoveAction(Coord(3, 3), [Direction.Left]),
-        MoveAction(Coord(3, 2), [Direction.Down, Direction.Right]),
-        MoveAction(Coord(5, 4), [Direction.Down]),
-        MoveAction(Coord(6, 4), [Direction.Down]),
-    ]
+    for dir in DIR_ACTIONS:
+        new_node = apply_action(dir, node)
+
+        # Only allow multiple jumps
+        if (new_node is not None and new_node.is_jump):
+            # Merge two nodes
+            new_node.action = MoveAction(new_node.action.coord, node.action.directions + new_node.action.directions)
+            new_node.parent = node.parent
+            new_node.depth = node.depth
+
+            multiple_jumps.append(new_node)
+            expand_node_jump(new_node, multiple_jumps)
+        
+    return multiple_jumps
