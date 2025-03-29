@@ -39,6 +39,7 @@ class State:
             self.frog_coord = frog_coord
 
 
+
 # apply action, check if action is valid
 def apply_action(direction : Direction, node):
 
