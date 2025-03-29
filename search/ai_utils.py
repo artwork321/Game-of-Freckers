@@ -16,11 +16,13 @@ class Node:
     
     def add_children(self, child_node):
         self.children.append(child_node)
+    
+    def __lt__(self, other):
+        return self.fn < other.fn
 
     def __str__(self) -> str:
         return render_board(self.state.board, ansi=True)
             
-
 
 
 # State: contain red frog position, board = dict[Coord, CellState]
@@ -37,9 +39,6 @@ class State:
             self.frog_coord = frog_coord
 
 
-
-# get path: loop from the node to the parent
-
 # apply action, check if action is valid
 def apply_action(direction : Direction, node):
 
@@ -52,13 +51,12 @@ def apply_action(direction : Direction, node):
         return None
     
     # Update state for valid move
-    if (new_coord in current_state.board and current_state.board[new_coord] == CellState.BLUE): # Jump scenario
+    if (new_coord in current_state.board and current_state.board[new_coord] == CellState.BLUE): # Valid jump
         try:
             new_coord = new_coord + direction
         except ValueError:
             return None  # Invalid jump move
 
-    print(new_coord)
     if (new_coord in current_state.board and current_state.board[new_coord] == CellState.LILY_PAD): # Valid lily pad
         
         new_state.frog_coord = new_coord
@@ -66,7 +64,7 @@ def apply_action(direction : Direction, node):
         new_state.board.pop(current_state.frog_coord)
 
         hn = fn = min_fn = 1
-        new_node = Node(new_state, node, MoveAction(current_state.frog_coord, direction), node.depth+1, None, hn, fn, min_fn)
+        new_node = Node(new_state, node, MoveAction(current_state.frog_coord, direction), node.depth+1, [], hn, fn, min_fn)
 
         return new_node
     else:
@@ -74,4 +72,20 @@ def apply_action(direction : Direction, node):
 
     
 
-# goal test
+# Evaluate whether the given node satisfies the goal of the problem
+def goal_test(node):
+    if (node.state.frog_coord.r == 7):
+        return True
+    
+    return False
+
+
+#   Return the sequence of actions that generated the given the node
+def get_path(node):
+    
+    path = []
+    next_node = node
+    while next_node.parent:
+        path.insert(0, next_node.action)
+        next_node = next_node.parent
+    return path

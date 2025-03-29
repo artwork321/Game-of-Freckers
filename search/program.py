@@ -1,6 +1,6 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part A: Single Player Freckers
-
+from queue import PriorityQueue
 from .core import CellState, Coord, Direction, MoveAction
 from .utils import render_board
 from .ai_utils import *
@@ -35,10 +35,27 @@ def search(
     # ...
 
     init_node = Node(State(board, None), None, None, 0, [], 1, 1, 1)
-    new_node = apply_action(Direction.Down, init_node)
-    new_node_2 = apply_action(Direction.DownLeft, new_node)
+    priority_queue = PriorityQueue()
+    priority_queue.put(init_node)
 
-    print(new_node_2.action)
+    DIR_ACTIONS = [Direction.Down, Direction.Right, Direction.Left, Direction.DownLeft, Direction.DownRight]
+    
+    while True:
+        if priority_queue == []:
+            # no more possible states
+            return None
+
+        next_node = priority_queue.get()
+
+        if (goal_test(next_node)):
+            return get_path(next_node)
+
+        for dir in DIR_ACTIONS:
+            new_node = apply_action(dir, next_node)
+
+            if (new_node is not None):
+                next_node.add_children(new_node)
+                priority_queue.put(new_node)
 
 
     # Here we're returning "hardcoded" actions as an example of the expected
