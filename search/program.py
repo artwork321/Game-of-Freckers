@@ -38,7 +38,7 @@ def search(
 
     
     while True:
-        if priority_queue == []:
+        if priority_queue.empty():
             # no more possible states
             return None
 
@@ -51,6 +51,7 @@ def search(
             new_node = apply_action(dir, next_node)
 
             if (new_node is not None):
+                print(new_node)
                 multiple_jumps_node = []
 
                 if (new_node.is_jump):
