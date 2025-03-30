@@ -9,39 +9,48 @@ GOAL_ROW = 7
 class Node:
     def __init__(self, state, parent, action: MoveAction, children, is_jump=False):
         self.state = state
-        self.parent = parent # the parent that gives rise to the min cost_so_far
+        self.parent = parent # the parent that gives rise to the min cost_so_far 
+        # TODO keep a list of visited nodes and update optimal parent for a repeated state instead of creating a new node
         self.action = action
         self.children = children
         self.is_jump = is_jump
         
         if not parent:
             self.cost_so_far = 0
+        elif parent.is_jump and is_jump:
+            self.cost_so_far = parent.cost_so_far
         else: 
             self.cost_so_far = parent.cost_so_far + 1
-        self.est_cost_to_goal = self.get_est_cost_to_goal()  
-        self.est_total_cost = self.cost_so_far + self.est_cost_to_goal
+
+        self.est_cost_to_goal = self.get_est_cost_to_goal()
+        if self.est_cost_to_goal is None:
+            self.est_total_cost = None
+        else:  
+            self.est_total_cost = self.cost_so_far + self.est_cost_to_goal
 
     def add_children(self, child_node):
         self.children.append(child_node)
-        
+
     def get_est_cost_to_goal(self):
         if self.goal_test():
             return 0
 
-        est_cost_to_goal = 2 * BOARD_N # TODO what if there is no target reachable --> need to remove from search ie move into visited
+        est_cost_to_goal = None 
         for (coord, cell_state) in self.state.board.items():
             if ((coord.r == GOAL_ROW and cell_state == CellState.LILY_PAD)
                 # Check if a BLUE is reachable using valid moves
                 or (coord.r >= self.state.red_frog_coord.r and cell_state == CellState.BLUE)): 
                 est_distance = self._get_est_distance(coord)
-                if est_distance < est_cost_to_goal:
+                if est_cost_to_goal is None:
+                    est_cost_to_goal = est_distance
+                elif est_distance < est_cost_to_goal:
                     est_cost_to_goal = est_distance
 
         return est_cost_to_goal
-    
+
     def _get_est_distance(self, target: Coord):
         dist_vector = Vector2(*target) - Vector2(*self.state.red_frog_coord)
-        n_diag_moves = max(abs(dist_vector.r), abs(dist_vector.c)) 
+        n_diag_moves = min(abs(dist_vector.r), abs(dist_vector.c)) 
         dist_vector -= Vector2(*map(np.sign, dist_vector)) * n_diag_moves
         n_verti_moves = abs(dist_vector.r)
         n_horiz_moves = abs(dist_vector.c)
@@ -80,21 +89,21 @@ class Node:
 # State: contain red frog position, board = dict[Coord, CellState]
 class State:
     def __init__(self, board: dict[Coord, CellState], red_frog_coord: Coord):
-        self.board = board
+        self.board = board.copy()
 
         if (red_frog_coord is None):
             for (coord, cell_state) in board.items():
                 if cell_state == CellState.RED:
-                    self.red_frog_coord = coord
+                    self.red_frog_coord = Coord(coord.r, coord.c)
                     break
         else:
-            self.red_frog_coord = red_frog_coord
+            self.red_frog_coord = Coord(red_frog_coord.r, red_frog_coord.c)
 
 
 # apply action, check if action is valid
 def apply_action(direction : Direction, node):
     current_state = node.state
-    new_state = State(node.state.board.copy(), node.state.red_frog_coord)
+    new_state = State(node.state.board, node.state.red_frog_coord)
     is_jump = False
 
     try: 

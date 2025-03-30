@@ -34,7 +34,8 @@ def search(
     # Do some impressive AI stuff here to find the solution...
     init_node = Node(State(board, None), None, None, [])
     priority_queue = StablePriorityQueue()
-    priority_queue.put(init_node)
+    queuing_fn_BestFS(priority_queue, init_node)
+    # queuing_fn_BreadthFS(priority_queue, init_node)
 
     while True:
         if priority_queue.empty():
@@ -51,20 +52,21 @@ def search(
 
             if (new_node is not None):
                 # print(new_node)
-                multiple_jumps_node = []
+                # multiple_jumps_node = []
 
                 # if (new_node.is_jump):
                 #     multiple_jumps_node = expand_node_jump(new_node)
 
                 next_node.add_children(new_node)
                 queuing_fn_BestFS(priority_queue, new_node)
+                # queuing_fn_BreadthFS(priority_queue, new_node)
 
                 # for node in multiple_jumps_node:
                 #     next_node.add_children(node)
                 #     queuing_fn_BreadthFS(priority_queue, node)
                 
                 # queuing_fn_BreadthFS(priority_queue, new_node)
-    
+
 
 def expand_node_jump(node, multiple_jumps = []):
 
@@ -83,8 +85,10 @@ def expand_node_jump(node, multiple_jumps = []):
         
     return multiple_jumps
 
-# def queuing_fn_BreadthFS(queue: StablePriorityQueue, node: Node) -> None:
-#     queue.put(node)
+def queuing_fn_BreadthFS(queue: StablePriorityQueue, node: Node) -> None:
+    node.est_total_cost = node.cost_so_far
+    queue.put(node)
 
 def queuing_fn_BestFS(queue: StablePriorityQueue, node: Node) -> None:
-    queue.put(node)
+    if node.est_total_cost is not None:
+        queue.put(node)
