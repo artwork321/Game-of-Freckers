@@ -7,7 +7,7 @@ class StablePriorityQueue(PriorityQueue):
 
     def put(self, item):
         """Insert item with a given priority, preserving insertion order for ties."""
-        super().put((item.fn, self.insertion_order, item))
+        super().put((item.est_total_cost, self.insertion_order, item))
         self.insertion_order += 1
 
     def get(self):
