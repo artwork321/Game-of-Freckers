@@ -45,31 +45,27 @@ def search(
         next_node = priority_queue.get()
 
         if next_node.goal_test():
-            return next_node.get_path(True)
+            return next_node.get_path(display=True)
 
         for dir in DIR_ACTIONS:
             new_node = apply_action(dir, next_node)
 
-            if (new_node is not None):
+            if new_node is not None:
+                next_node.add_children(new_node)
+                queuing_fn_BestFS(priority_queue, new_node)
+                # queuing_fn_BreadthFS(priority_queue, new_node)
+                
                 # print(new_node)
                 # multiple_jumps_node = []
 
                 # if (new_node.is_jump):
                 #     multiple_jumps_node = expand_node_jump(new_node)
 
-                next_node.add_children(new_node)
-                queuing_fn_BestFS(priority_queue, new_node)
-                # queuing_fn_BreadthFS(priority_queue, new_node)
-
                 # for node in multiple_jumps_node:
                 #     next_node.add_children(node)
                 #     queuing_fn_BreadthFS(priority_queue, node)
-                
-                # queuing_fn_BreadthFS(priority_queue, new_node)
-
 
 def expand_node_jump(node, multiple_jumps = []):
-
     for dir in DIR_ACTIONS:
         new_node = apply_action(dir, node)
 

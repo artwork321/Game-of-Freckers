@@ -9,25 +9,29 @@ GOAL_ROW = 7
 class Node:
     def __init__(self, state, parent, action: MoveAction, children, is_jump=False):
         self.state = state
-        self.parent = parent # the parent that gives rise to the min cost_so_far 
-        # TODO keep a list of visited nodes and update optimal parent for a repeated state instead of creating a new node
+        self.parent = parent
         self.action = action
         self.children = children
         self.is_jump = is_jump
         
         if not parent:
             self.cost_so_far = 0
+        # Check if this is a part of consecutive jumps
         elif parent.is_jump and is_jump:
+            self.action = MoveAction(self.parent.action.coord, self.parent.action.directions + self.action.directions)
             self.cost_so_far = parent.cost_so_far
+            self.parent = self.parent.parent
         else: 
             self.cost_so_far = parent.cost_so_far + 1
 
         self.est_cost_to_goal = self.get_est_cost_to_goal()
+        # Check if there are no valid targets
         if self.est_cost_to_goal is None:
             self.est_total_cost = None
         else:  
             self.est_total_cost = self.cost_so_far + self.est_cost_to_goal
 
+    # TODO no need to keep track of children 
     def add_children(self, child_node):
         self.children.append(child_node)
 
@@ -59,28 +63,27 @@ class Node:
     
     # Evaluate whether the given node satisfies the goal of the problem
     def goal_test(self):
-        if (self.state.red_frog_coord.r == GOAL_ROW):
-            return True
-        return False
+        return self.state.red_frog_coord.r == GOAL_ROW
     
-    #   Return the sequence of actions that generated the given the node
-    def get_path(self, display_board=False):
+    #  Return the sequence of actions that generated the given the node
+    def get_path(self, display=False):
         path = []
-        boards_along_path = []
+        nodes_along_path = []
+
         next_node = self
         while next_node.parent:
-            boards_along_path.insert(0, next_node.state.board)
+            nodes_along_path.insert(0, next_node)
             path.insert(0, next_node.action)
             next_node = next_node.parent
 
-        if display_board:
-            for board in boards_along_path:
-                print(render_board(board, ansi=True))
+        if display:
+            for node in nodes_along_path:
+                print(node)
 
         return path
 
     def __lt__(self, other):
-        return self.fn < other.fn
+        return self.est_total_cost < other.est_total_cost
 
     def __str__(self) -> str:
         return render_board(self.state.board, ansi=True)     
@@ -91,7 +94,7 @@ class State:
     def __init__(self, board: dict[Coord, CellState], red_frog_coord: Coord):
         self.board = board.copy()
 
-        if (red_frog_coord is None):
+        if red_frog_coord is None:
             for (coord, cell_state) in board.items():
                 if cell_state == CellState.RED:
                     self.red_frog_coord = Coord(coord.r, coord.c)
@@ -101,7 +104,8 @@ class State:
 
 
 # apply action, check if action is valid
-def apply_action(direction : Direction, node):
+# TODO add this as a method of Node class 
+def apply_action(direction: Direction, node: Node):
     current_state = node.state
     new_state = State(node.state.board, node.state.red_frog_coord)
     is_jump = False
