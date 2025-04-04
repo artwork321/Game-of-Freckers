@@ -4,6 +4,7 @@ class StablePriorityQueue(PriorityQueue):
     def __init__(self):
         super().__init__()
         self.insertion_order = 0
+        self.max_nodes = 0
 
     def put(self, item):
         """Insert item with a given priority, preserving insertion order for ties."""

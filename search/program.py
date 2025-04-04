@@ -4,6 +4,8 @@ from .stable_pq import StablePriorityQueue
 from .core import CellState, Coord, Direction, MoveAction
 from .utils import render_board
 from .ai_utils import *
+import time
+import resource 
 
 DIR_ACTIONS = [Direction.Down, Direction.Right, Direction.Left, Direction.DownLeft, Direction.DownRight]
 
@@ -25,6 +27,8 @@ def search(
         A list of "move actions" as MoveAction instances, or `None` if no
         solution is possible.
     """
+    node_count = 0 
+    time_start = time.perf_counter()
 
     # The render_board() function is handy for debugging. It will print out a
     # board state in a human-readable format. If your terminal supports ANSI
@@ -40,12 +44,20 @@ def search(
     while True:
         if priority_queue.empty():
             # no more possible states
+            time_elapsed = (time.perf_counter() - time_start)
+            memMb=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024.0/1024.0
+            print ("%5.5f secs %5.5f MByte" % (time_elapsed,memMb))
+            print(f"Total nodes expanded: {node_count}")
             return None
 
         next_node = priority_queue.get()
 
         if next_node.goal_test():
-            return next_node.get_path(display=True)
+            time_elapsed = (time.perf_counter() - time_start)
+            memMb=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024.0/1024.0
+            print ("%5.5f secs %5.5f MByte" % (time_elapsed,memMb))
+            print(f"Total nodes expanded: {node_count}")
+            return next_node.get_path(display=False)
 
         for dir in DIR_ACTIONS:
             new_node = apply_action(dir, next_node)
@@ -54,6 +66,7 @@ def search(
                 next_node.add_children(new_node)
                 queuing_fn_BestFS(priority_queue, new_node)
                 # queuing_fn_BreadthFS(priority_queue, new_node)
+                node_count += 1
                 
                 # print(new_node)
                 # multiple_jumps_node = []
