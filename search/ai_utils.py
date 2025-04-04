@@ -37,7 +37,7 @@ class Node:
             return 0
 
         est_cost_to_goal = None 
-        for coord in State.target_coords: # State.last_row_lily_pads_coords + State.blue_frogs_coords:
+        for coord in State.target_coords:
             # Check if the coord is reachable (on a higher row than that of the red frog)
             if coord.r >= self.state.red_frog_coord.r:
                 est_distance = self._get_est_distance(coord)
@@ -49,20 +49,10 @@ class Node:
         return est_cost_to_goal
 
     def _get_est_distance(self, target: Coord):
-        # dist_vector = Vector2(*target) - Vector2(*self.state.red_frog_coord)
-        # n_diag_moves = min(abs(dist_vector.r), abs(dist_vector.c)) 
-        # dist_vector -= Vector2(*map(np.sign, dist_vector)) * n_diag_moves
-        # n_verti_moves = abs(dist_vector.r)
-        # n_horiz_moves = abs(dist_vector.c)
-        
         verti_dist = abs(target.r - self.state.red_frog_coord.r)
         horiz_dist = abs(target.c - self.state.red_frog_coord.c)
         n_diag_moves = min(verti_dist, horiz_dist)
-        
-        # n_verti_moves = abs(verti_dist) - n_diag_moves
-        # n_horiz_moves = abs(horiz_dist) - n_diag_moves
 
-        # return n_diag_moves + n_verti_moves + n_horiz_moves
         return verti_dist + horiz_dist - n_diag_moves
 
     # Evaluate whether the given node satisfies the goal of the problem
@@ -117,17 +107,15 @@ class Node:
 
         return path
 
-    def __lt__(self, other):
-        return self.est_total_cost < other.est_total_cost
-
     def __str__(self) -> str:
         return render_board(self.state.board, ansi=True)     
 
 
-# State contains  red frog position, board = dict[Coord, CellState]
+# State contains red frog position, board = dict[Coord, CellState]
 class State:
-    # Store the coordinates of blue frogs and last row lily pads
-    # to compute heuristics later on 
+    # Cached coordinates of blue frogs and final-row lily pads
+    # for heuristic calculations. These remain constant until
+    # the red frog reaches the goal.
     target_coords = []
 
     def __init__(self, board: dict[Coord, CellState], red_frog_coord: Coord):
@@ -149,4 +137,3 @@ class State:
                     cls.target_coords.append(coord)
                 elif coord.r == GOAL_ROW and cell_state == CellState.LILY_PAD:
                     cls.target_coords.append(coord)
-
