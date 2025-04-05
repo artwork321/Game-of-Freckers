@@ -1,6 +1,6 @@
 # COMP30024 Artificial Intelligence, Semester 1 2025
 # Project Part A: Single Player Freckers
-from .stable_pq import StablePriorityQueue
+from .pq import MyPriorityQueue
 from .core import CellState, Coord, Direction, MoveAction
 from .utils import render_board
 from .ai_utils import *
@@ -32,7 +32,8 @@ def search(
 
     State.get_target_pos(board)
     init_node = Node(State(board, None), None, None)
-    priority_queue = StablePriorityQueue()
+    node_count += 1
+    priority_queue = MyPriorityQueue()
     queuing_fn(priority_queue, init_node)
 
     while True:
@@ -59,6 +60,6 @@ def search(
                 queuing_fn(priority_queue, new_node)
                 node_count += 1
 
-def queuing_fn(queue: StablePriorityQueue, node: Node) -> None:
+def queuing_fn(queue: MyPriorityQueue, node: Node) -> None:
     if node.est_total_cost is not None:
         queue.put(node)

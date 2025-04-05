@@ -109,6 +109,9 @@ class Node:
 
     def __str__(self) -> str:
         return render_board(self.state.board, ansi=True)     
+    
+    def __lt__(self, other):
+        return self.est_total_cost < other.est_total_cost 
 
 
 # State contains red frog position, board = dict[Coord, CellState]
