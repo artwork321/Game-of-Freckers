@@ -18,6 +18,7 @@ class Node:
             self.cost_so_far = 0
         # Check if this is a part of consecutive jumps
         elif parent.is_jump and is_jump:
+            self.state.board[parent.state.red_frog_coord] = CellState.LILY_PAD
             self.action = MoveAction(self.parent.action.coord, self.parent.action.directions + self.action.directions)
             self.cost_so_far = parent.cost_so_far
             self.parent = self.parent.parent
@@ -75,11 +76,18 @@ class Node:
             try:
                 new_coord = new_coord + direction
                 is_jump = True
+                
+                # Avoid infinitive jumps
+                if (self.action and self.is_jump):
+                    prev_move = self.action.directions[len(self.action.directions) - 1]
+                    if (current_state.red_frog_coord - prev_move - prev_move) == new_coord:
+                        return None
+                    
             except ValueError:
                 return None  # Invalid jump move
 
         if (new_coord in current_state.board and current_state.board[new_coord] == CellState.LILY_PAD): # Valid lily pad
-            
+
             new_state.red_frog_coord = new_coord
             new_state.board[new_state.red_frog_coord] = CellState.RED # Move Red frog to new cell
             new_state.board.pop(current_state.red_frog_coord)

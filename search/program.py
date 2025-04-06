@@ -51,7 +51,7 @@ def search(
             memMb=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024.0/1024.0
             print ("%5.5f secs %5.5f MByte" % (time_elapsed,memMb))
             print(f"Total nodes expanded: {node_count}")
-            return next_node.get_path(display=False)
+            return next_node.get_path(display=True)
 
         for dir in DIR_ACTIONS:
             new_node = next_node.apply_action(dir)
